@@ -3,7 +3,7 @@ from logging import getLogger
 from telnetlib import Telnet
 from urllib.parse import quote, unquote
 
-from uykfe.support.config import server, ADDRESS, PORT, PLAYER
+from uykfe.support.config import squeeze_kargs, ADDRESS, PORT, PLAYER
 
 
 LOG = getLogger(__name__)
@@ -12,9 +12,9 @@ LOG = getLogger(__name__)
 class SqueezeServer():
     
     def __init__(self, address=None, port=None, player=None, dir=None, name=None):
-        address = address or server(dir, name)[ADDRESS]
-        port = port or server(dir, name)[PORT]
-        player = player or server(dir, name)[PLAYER]
+        address = address or squeeze_kargs(dir, name)[ADDRESS]
+        port = port or squeeze_kargs(dir, name)[PORT]
+        player = player or squeeze_kargs(dir, name)[PLAYER]
         LOG.debug('Connecting to {0}:{1}.'.format(address, port))
         self.__telnet = Telnet(address, port) 
         LOG.debug('Connected.')

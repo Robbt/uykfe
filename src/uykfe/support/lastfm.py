@@ -5,7 +5,7 @@ from logging import getLogger
 from urllib.parse import urlunparse, quote
 from urllib.request import Request, urlopen
 
-from uykfe.support.config import SECRET, PROXY, lastfm
+from uykfe.support.config import SECRET, PROXY, lastfm_kargs
 
 
 LOG = getLogger(__name__)
@@ -20,6 +20,8 @@ def unpack(map, *names):
         try:
             return unpack(map[names[0]], *names[1:])
         except TypeError:
+            raise NotFoundError
+        except KeyError:
             raise NotFoundError
     else:
         return map
@@ -36,9 +38,8 @@ class LastFm():
     def __init__(self, secret=None, proxy=None, dir=None, name=None):
         self.__api_key = '542c2f7c651d929ece5a72f18db35a93'
         if not secret:
-            lastfm_config = lastfm(dir=dir, name=name)
-            secret = lastfm_config[SECRET]
-            proxy = lastfm_config.get(PROXY, None)
+            secret = lastfm_kargs(dir=dir, name=name)[SECRET]
+            proxy = lastfm_kargs(dir=dir, name=name)[PROXY]
         self.__secret = secret
         self.__proxy = proxy
         self.__timestamp = None
@@ -59,13 +60,15 @@ class LastFm():
         return request
         
     def __read(self, **kargs):
-        now = time()
-        while self.__timestamp and now - self.__timestamp < 0.2:
+        while self.__timestamp and time() - self.__timestamp < 0.2:
+            LOG.debug('sleep')
             sleep(0.1)
         self.__timestamp = time()
-        response = loads(urlopen(self.__request(**kargs)).read().decode('utf8'))
-        LOG.debug(response)
-        return response
+        response = urlopen(self.__request(**kargs))
+        #LOG.debug(response)
+        result = loads(response.read().decode('utf8'))
+        LOG.debug(result)
+        return result
         
     def track_search(self, track):
         return self.__read(method='track.search', track=track)
@@ -81,4 +84,13 @@ class LastFm():
     def artist_for_artist(self, artist):
         return possible_list(unpack(self.artist_search(artist), 'results', 'artistmatches', 'artist'))[0]['name']
     
-        
+    def artist_tags(self, artist):
+        return self.__read(method='artist.gettoptags', artist=artist)
+    
+    def tags_for_artist(self, artist):
+        def totuple(tagdata):
+            return (tagdata['name'], int(tagdata['count']))
+        def nonzero(tagdata):
+            return tagdata[1] > 0
+        data = possible_list(unpack(self.artist_tags(artist), 'toptags', 'tag'))
+        return filter(nonzero, map(totuple, data))

@@ -7,7 +7,7 @@ from urllib.parse import urlunparse
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.exc import OperationalError
 
@@ -72,9 +72,8 @@ class LocalArtist(BASE):
     lastfm_artist_id = Column(Integer, ForeignKey('lastfm_artists.id'), nullable=True)
     tracks = relationship('LocalTrack', backref='local_artist')
     
-    def __init__(self, name, lastfm_artist=None):
+    def __init__(self, name):
         self.name = name
-        self.lastfm_artist = lastfm_artist
     
 
 class LocalTrack(BASE):
@@ -90,8 +89,19 @@ class LocalTrack(BASE):
         self.name = name
         self.local_artist = local_artist
 
-    def __repr__(self):
-        return '<LocalTrack {0}>'.format(self.url)
+
+class Graph(BASE):
+    
+    __tablename__ = 'graph'
+    
+    from_id = Column(Integer, ForeignKey('lastfm_artists.id'), primary_key=True)
+    to_id = Column(Integer, ForeignKey('lastfm_artists.id'), primary_key=True)
+    weight = Column(Integer)
+
+    def __init__(self, weight, from_=None, to_=None):
+        self.weight = weight
+        self.from_ = from_
+        self.to_ = to_
 
 
 class LastFmArtist(BASE):
@@ -100,8 +110,12 @@ class LastFmArtist(BASE):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True, unique=True)
+    tagged = Column(Boolean, default=False)
+    linked = Column(Boolean, default=False)
     local_artists = relationship('LocalArtist', backref='lastfm_artist')
     lastfm_tagweights = relationship('LastFmTagWeight', backref='lastfm_artist')
+    graph_out = relationship('Graph', backref='from_', primaryjoin='lastfm_artists.c.id == graph.c.from_id')
+    graph_in = relationship('Graph', backref='to_', primaryjoin='lastfm_artists.c.id == graph.c.to_id')
     
     def __init__(self, name):
         self.name = name
@@ -133,4 +147,4 @@ class LastFmTagWeight(BASE):
         self.lastfm_artist = lastfm_artist
         
     
-    
+        

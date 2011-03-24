@@ -5,7 +5,7 @@ from logging import getLogger
 from random import shuffle
 
 from uykfe.support.db import open_db, LocalArtist, LastFmArtist
-from uykfe.support.config import lastfm
+from uykfe.support.config import lastfm_kargs
 from uykfe.support.lastfm import LastFm, NotFoundError
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -15,7 +15,7 @@ LOG = getLogger(__name__)
 
 def identify_artists(dir=None, name=None):
     session = open_db(dir=dir, name=name)()
-    lastfm = LastFm(**lastfm(dir=dir, name=name))
+    lastfm = LastFm(**lastfm_kargs(dir=dir, name=name))
     for artist in session.query(LocalArtist).filter(LocalArtist.lastfm_artist == None).all():
         name = identify_artist(session, lastfm, artist)
         LOG.info('Identified {0} as {1}.'.format(artist.name, name))
@@ -25,7 +25,7 @@ def identify_artists(dir=None, name=None):
             lastfm_artist = LastFmArtist(name=name)
         session.add(lastfm_artist)
         artist.lastfm_artist = lastfm_artist
-    session.commit()
+        session.commit()
 
         
 def identify_artist(session, lastfm, artist):

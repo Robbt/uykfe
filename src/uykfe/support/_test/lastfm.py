@@ -14,3 +14,10 @@ class LastFmTest(TestCase):
         lastfm = LastFm(dir=TEST_DIR)
         pprint(lastfm.track_search('all i need is a miracle'), indent=2)
         print(list(lastfm.artists_for_track('once more in the')))
+
+    def test_artist_tags(self):
+        basicConfig(level=DEBUG)
+        lastfm = LastFm(dir=TEST_DIR)
+        pprint(lastfm.artist_tags('Talking Heads'), indent=2)
+        print(list(lastfm.tags_for_artist('Jaga Jazzist')))
+        

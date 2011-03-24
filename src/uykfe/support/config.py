@@ -55,7 +55,7 @@ def mp3_dirs(config=None, dir=None, name=None):
     return config[MP3DIRS]
 
 
-def server(config=None, dir=None, name=None):
+def squeeze_kargs(config=None, dir=None, name=None):
     config = config or open_config(dir, name)
     if SERVER not in config: config[SERVER] = {}
     server = config[SERVER]
@@ -71,8 +71,10 @@ def require(config, name):
     return config[name]
 
 
-def lastfm(config=None, dir=None, name=None):
+def lastfm_kargs(config=None, dir=None, name=None):
     config = config or open_config(dir, name)
     lastfm = require(config, LASTFM)
     require(lastfm, SECRET)
+    if PROXY not in lastfm:
+        lastfm[PROXY] = None
     return lastfm
