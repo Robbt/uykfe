@@ -1,2 +1,5 @@
 env
 .bashrc
+.metadata
+.project
+.pydevproject
