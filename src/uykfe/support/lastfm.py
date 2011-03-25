@@ -6,6 +6,7 @@ from urllib.parse import urlunparse, quote
 from urllib.request import Request, urlopen
 
 from uykfe.support.config import SECRET, PROXY, lastfm_kargs
+from urllib.error import HTTPError
 
 
 LOG = getLogger(__name__)
@@ -49,7 +50,7 @@ class LastFm():
         kargs['format'] = 'json'
         query = '&'.join(name + '=' + quote(kargs[name], encoding='utf8') for name in kargs)
         url = urlunparse(('http', 'ws.audioscrobbler.com', '2.0/', '', query, ''))
-        LOG.debug('URL: {0}'.format(url))
+        LOG.info('URL: {0}'.format(url))
         return url
     
     def __request(self, **kargs):
@@ -60,14 +61,20 @@ class LastFm():
         return request
         
     def __read(self, **kargs):
-        while self.__timestamp and time() - self.__timestamp < 0.2:
+        while self.__timestamp and time() - self.__timestamp < 1:
             LOG.debug('sleep')
-            sleep(0.1)
+            sleep(0.3)
         self.__timestamp = time()
-        response = urlopen(self.__request(**kargs))
+        for retry in range(10):
+            try:
+                response = urlopen(self.__request(**kargs))
+                break
+            except HTTPError as e:
+                LOG.warn(e)
+                sleep(60*2**retry)
         #LOG.debug(response)
         result = loads(response.read().decode('utf8'))
-        LOG.debug(result)
+        #LOG.debug(result)
         return result
         
     def track_search(self, track):
@@ -81,8 +88,9 @@ class LastFm():
     def artist_search(self, artist):
         return self.__read(method='artist.search', artist=artist)
     
-    def artist_for_artist(self, artist):
-        return possible_list(unpack(self.artist_search(artist), 'results', 'artistmatches', 'artist'))[0]['name']
+    def artists_for_artist(self, artist):
+        for artist in possible_list(unpack(self.artist_search(artist), 'results', 'artistmatches', 'artist')):
+            yield artist['name']
     
     def artist_tags(self, artist):
         return self.__read(method='artist.gettoptags', artist=artist)

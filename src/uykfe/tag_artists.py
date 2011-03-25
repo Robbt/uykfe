@@ -13,9 +13,12 @@ LOG = getLogger(__name__)
 
 def tag_artists(dir=None, name=None):
     session = open_db(dir=dir, name=name)()
-    lastfm = LastFm(**lastfm_kargs(dir=dir, name=name))
-    for artist in session.query(LastFmArtist).filter(LastFmArtist.tagged == False).all():
-        tag_artist(session, lastfm, artist)
+    try:
+        lastfm = LastFm(**lastfm_kargs(dir=dir, name=name))
+        for artist in session.query(LastFmArtist).filter(LastFmArtist.tagged == False).all():
+            tag_artist(session, lastfm, artist)
+    finally:
+        session.close()
         
 
 def tag_artist(session, last_fm, artist):

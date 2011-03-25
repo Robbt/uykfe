@@ -10,11 +10,11 @@ LOG = getLogger(__name__)
 
 def link_artists(dir=None, name=None):
     session = open_db(dir=dir, name=name)()
-    for artist in session.query(LastFmArtist).filter(LastFmArtist.linked == False).all():
-        link_artist(session, artist)
-        artist.linked = True
-        session.commit()
-        LOG.debug('Linked {0}'.format(artist.name))
+    try:
+        for artist in session.query(LastFmArtist).filter(LastFmArtist.linked == False).all():
+            link_artist(session, artist)
+    finally:
+        session.close()
         
 
 def link_artist(session, artist):
@@ -35,6 +35,9 @@ select :id as from_id,
  group by a.name
  order by weight desc
  limit 10'''), params={'id': artist.id})
+    artist.linked = True
+    session.commit()
+    LOG.debug('Linked {0}'.format(artist.name))
     
 
 if __name__ == '__main__':
