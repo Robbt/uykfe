@@ -1,5 +1,5 @@
 
-from logging import getLogger
+from logging import getLogger, basicConfig, DEBUG, INFO
 
 from uykfe.support.db import open_db, LastFmArtist, LastFmTagWord,\
     LastFmTagWeight
@@ -34,8 +34,10 @@ def tag_artist(session, last_fm, artist):
         pass
     artist.tagged = True
     session.commit()
+    LOG.info('Tagged {0}.'.format(artist.name))
     
 
 if __name__ == '__main__':
+    basicConfig(level=INFO)
     tag_artists()
     

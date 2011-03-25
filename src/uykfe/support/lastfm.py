@@ -7,6 +7,7 @@ from urllib.request import Request, urlopen
 
 from uykfe.support.config import SECRET, PROXY, lastfm_kargs
 from urllib.error import HTTPError
+from http.client import BadStatusLine
 
 
 LOG = getLogger(__name__)
@@ -50,7 +51,7 @@ class LastFm():
         kargs['format'] = 'json'
         query = '&'.join(name + '=' + quote(kargs[name], encoding='utf8') for name in kargs)
         url = urlunparse(('http', 'ws.audioscrobbler.com', '2.0/', '', query, ''))
-        LOG.info('URL: {0}'.format(url))
+        LOG.debug('URL: {0}'.format(url))
         return url
     
     def __request(self, **kargs):
@@ -69,7 +70,7 @@ class LastFm():
             try:
                 response = urlopen(self.__request(**kargs))
                 break
-            except HTTPError as e:
+            except (HTTPError, BadStatusLine) as e:
                 LOG.warn(e)
                 sleep(60*2**retry)
         #LOG.debug(response)

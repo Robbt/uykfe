@@ -45,7 +45,7 @@ def identify_artist(session, lastfm, artist):
         weight = 2
         for candidate in lastfm.artists_for_artist(artist.name):
             score[candidate] = weight
-            LOG.info(' {0} ({1:4.2f}).'.format(candidate, weight))
+            LOG.debug(' {0} ({1:4.2f}).'.format(candidate, weight))
             weight = weight * 0.9
     except NotFoundError:
         LOG.warn('Search failed for {0}.'.format(artist.name))
@@ -55,7 +55,7 @@ def identify_artist(session, lastfm, artist):
             weight = 1
             LOG.info(' Track {0}.'.format(track.name))
             for candidate in similar(lastfm.artists_for_track(track.name)):
-                LOG.info('  {0} ({1:4.2f}).'.format(candidate, weight))
+                LOG.debug('  {0} ({1:4.2f}).'.format(candidate, weight))
                 score[candidate] += weight
                 weight = 0.9 * weight
             scores = sorted(score.items(), key=lambda item: item[1], reverse=True)
