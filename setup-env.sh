@@ -6,5 +6,5 @@ cd stagger-read-only
 python setup.py build
 python setup.py install
 easy_install sqlalchemy
-
+easy_install altgraph
 

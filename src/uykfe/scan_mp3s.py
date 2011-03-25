@@ -36,7 +36,7 @@ def scan_dirs(session, directories):
                 if file.lower().endswith('.mp3'):
                     path = join(root, file)
                     scan_path(session, not_found, path)
-                    if count / 100 == int(count / 100):
+                    if not count % 100:
                         LOG.info('Scanned {0} tracks.'.format(count))
                     count += 1
     if not_found:
