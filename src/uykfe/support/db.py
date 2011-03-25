@@ -74,7 +74,7 @@ class LocalArtist(BASE):
     
     def __init__(self, name):
         self.name = name
-    
+        
 
 class LocalTrack(BASE):
     
@@ -119,7 +119,7 @@ class LastFmArtist(BASE):
     
     def __init__(self, name):
         self.name = name
-
+        
 
 class LastFmTagWord(BASE):
     

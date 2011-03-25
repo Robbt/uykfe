@@ -44,7 +44,11 @@ class SqueezeServer():
     
     def __global(self, command):
         command = command.encode('utf8')
-        response = command[:-1] + b'([^\n]*)\n'
+        if command.endswith(b'?'):
+            response = command[:-1]
+        else:
+            response = b''
+        response += b'([^\n]*)\n'
         LOG.debug('Sending {0}'.format(command))
         self.__telnet.write(command + b'\n')
         (_, match, _) = self.__telnet.expect([response])
@@ -54,3 +58,18 @@ class SqueezeServer():
     
     def __player(self, command):
         return self.__global(quote(self.__pid) + ' ' + command)
+
+    def playlist_add(self, url):
+        LOG.info('Adding {0}.'.format(url))
+        return unquote(self.__player('playlist add {0}'.format(quote(url))))
+    
+    @property
+    def path(self):
+        return unquote(self.__player('path ?'))
+    
+    @property
+    def url(self):
+        path = self.path
+        if not path.startswith('file://'):
+            path = 'file://' + path
+        return path

@@ -1,5 +1,5 @@
 
-from logging import getLogger
+from logging import getLogger, basicConfig, INFO
 
 from uykfe.support.db import open_db, LastFmArtist
 from sqlalchemy.sql.expression import text
@@ -37,9 +37,10 @@ select :id as from_id,
  limit 10'''), params={'id': artist.id})
     artist.linked = True
     session.commit()
-    LOG.debug('Linked {0}'.format(artist.name))
+    LOG.info('Linked {0}'.format(artist.name))
     
 
 if __name__ == '__main__':
+    basicConfig(level=INFO)
     link_artists()
     

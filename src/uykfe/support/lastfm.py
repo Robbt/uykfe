@@ -11,6 +11,7 @@ from http.client import BadStatusLine
 
 
 LOG = getLogger(__name__)
+DELAY = 0.2
 
 
 class NotFoundError(Exception):
@@ -62,9 +63,9 @@ class LastFm():
         return request
         
     def __read(self, **kargs):
-        while self.__timestamp and time() - self.__timestamp < 1:
+        while self.__timestamp and time() - self.__timestamp < DELAY:
             LOG.debug('sleep')
-            sleep(0.3)
+            sleep(DELAY / 3)
         self.__timestamp = time()
         for retry in range(10):
             try:
