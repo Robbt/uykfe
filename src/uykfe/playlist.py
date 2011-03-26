@@ -30,12 +30,14 @@ def find_track(session, artist, title):
         q = q.join(LocalArtist).filter(LocalArtist.name.contains(artist))
     tracks = q.all()
     if tracks:
-        return tracks.pop()
+        track = tracks.pop()
+        LOG.info('Using context track {0} by {1}.'.format(track.name, track.local_artist.name))
+        return track
     else:
-        raise Exception('No match found for {0} and {1}.'.format(artist, title))
+        raise Exception('No match found for {0} by {1}.'.format(title, artist))
 
 if __name__ == '__main__':
-    #basicConfig(level=INFO)
+    basicConfig(level=INFO)
     parser = build_parser()
     args = parser.parse_args()
     session = open_db()()
