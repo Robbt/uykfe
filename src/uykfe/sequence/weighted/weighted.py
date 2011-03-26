@@ -17,7 +17,7 @@ class WeightedControl(Control):
         self.__x_next = x_next
         self.__depth = depth
         self.__x_depth = x_depth
-        self.__max_weight = state.session.query(max_(Graph.weight)).one()
+        self.__max_weight = state.session.query(max_(Graph.weight)).one()[0]
     
     def weight_options(self, state, graphs):
         def count_unplayed(graph):
@@ -29,7 +29,7 @@ class WeightedControl(Control):
             return unplayed
         unplayed = dict((graph, count_unplayed(graph)) for graph in graphs)
         max_unplayed = max(unplayed.values())
-        if len(state.history) > self.__depth:
+        if self.__depth and len(state.history) > self.__depth:
             previous = state.history[-self.__depth].local_artist.lastfm_artist
         else:
             previous = None
@@ -43,7 +43,7 @@ class WeightedControl(Control):
                     q = state.session.query(Graph.weight)
                     q = q.filter(Graph.from_ == previous)
                     q = q.filter(Graph.to_ == graph.to_)  
-                    depth_weight += q.one()
+                    depth_weight += q.one()[0]
                 except NoResultFound:
                     LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
                 depth_weight /= self.__max_weight + 1
