@@ -1,17 +1,15 @@
 
 from random import shuffle
-from time import sleep
 
 from uykfe.sequence.base import State, Control
 from uykfe.support.db import LocalTrack
 
 
 
-class SimpleState(State):
+class DbState(State):
     
-    def __init__(self, session, squeeze):
+    def __init__(self, session):
         self.__session = session
-        self.__squeeze = squeeze
         all_tracks = list(session.query(LocalTrack).all())
         shuffle(all_tracks)
         self.unplayed_tracks = set(all_tracks)
@@ -20,26 +18,15 @@ class SimpleState(State):
     def session(self):
         return self.__session
     
-    @property
-    def current_url(self):
-        if self.__squeeze.playlist_remaining:
-            return self.__squeeze.url
-        else:
-            return None
-    
-    def wait(self):
-        while self.__squeeze.playlist_remaining > 1:
-            sleep(10)
 
-
-class SimpleControl(Control):
+class DbControl(Control):
     
     def weight_options(self, state, graphs):
         for graph in graphs:
             unplayed = 0
             for artist in graph.to_.local_artists:
                 for track in artist.tracks:
-                    if track not in state.unplayed_tracks:
+                    if track in state.unplayed_tracks:
                         unplayed += 1
             yield (graph.weight * unplayed, graph.to_)
         
