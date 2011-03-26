@@ -20,8 +20,9 @@ class WeightedControl(Control):
         self.__max_weight = state.session.query(max_(Graph.weight)).one()[0]
         
     def __normalize(self, weight, exponent):
-        weight = 1 + weight / self.__max_weight
-        return weight ** exponent
+        normalized = (1 + weight / self.__max_weight) ** exponent
+        LOG.debug('{0:6.1f} -> {1:4.2f}'.format(weight, normalized))
+        return normalized
     
     def weight_options(self, state, graphs):
         
@@ -55,6 +56,7 @@ class WeightedControl(Control):
                         depth_weight = q.one()[0]
                     except NoResultFound:
                         LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
+                        depth_weight = 0
             weight = weight * self.__normalize(depth_weight, self.__x_depth)
             yield (weight, graph.to_)
     
