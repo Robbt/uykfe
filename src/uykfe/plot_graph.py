@@ -1,6 +1,6 @@
 
 from logging import getLogger 
-from unicodedata import normalize, category
+#from unicodedata import normalize, category
 
 from altgraph.Graph import Graph
 from altgraph.Dot import Dot
@@ -33,13 +33,12 @@ def copy_to_graph(session):
 
 def write_graph(graph):
     dot = Dot(graph)
-    dot.style(size='100000,10000')
     for node in graph:
         (_, artist, _, _) = graph.describe_node(node)
         #name = ''.join((c for c in normalize('NFD', artist.name) if category(c) != 'Mn' and c != '"'))
         name = ''.join(c for c in artist.name if c != '"')
         dot.node_style(node, label=name)
-    dot.display()
+    dot.save_dot('uykfe.dot')
     
     
 if __name__ == '__main__':
