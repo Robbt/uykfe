@@ -4,7 +4,6 @@ from time import sleep
 from uykfe.sequence.db import DbState
 
 
-
 class SqueezeState(DbState):
     
     def __init__(self, session, squeeze):
