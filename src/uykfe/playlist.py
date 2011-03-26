@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser = build_weighted_parser('Print a playlist to stdout')
     parser.add_argument('count', metavar='N', type=int, help='the number of entries')
     args = parser.parse_args()
-    session = open_db()()
+    session = open_db(name=args.config)()
     track = find_track(session, args.artist, args.track)
     state = StaticState(session)
     if track:
