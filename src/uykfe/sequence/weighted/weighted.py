@@ -17,7 +17,7 @@ class WeightedControl(Control):
         self.__x_next = x_next
         self.__depth = depth
         self.__x_depth = x_depth
-        self.__max_weight = state.session.query(max_(Graph.weight)).one()
+        self.__max_weight = state.session.query(max_(Graph.weight)).one()[0]
         
     def __normalize(self, weight, exponent):
         weight = 1 + weight / self.__max_weight
