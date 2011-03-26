@@ -20,4 +20,4 @@ class SqueezeState(DbState):
     
     def wait(self):
         while self.__squeeze.playlist_remaining > 1:
-            sleep(10)
+            sleep(1)
