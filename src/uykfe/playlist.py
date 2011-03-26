@@ -2,6 +2,7 @@
 from itertools import islice
 from logging import getLogger, basicConfig, DEBUG, INFO
 from argparse import ArgumentParser
+from random import choice
 
 from uykfe.support.db import open_db, LocalArtist, LocalTrack
 from uykfe.sequence.base import sequence
@@ -30,7 +31,7 @@ def find_track(session, artist, title):
         q = q.join(LocalArtist).filter(LocalArtist.name.contains(artist))
     tracks = q.all()
     if tracks:
-        track = tracks.pop()
+        track = choice(tracks)
         LOG.info('Using context track {0} by {1}.'.format(track.name, track.local_artist.name))
         return track
     else:
