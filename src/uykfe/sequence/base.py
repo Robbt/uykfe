@@ -53,10 +53,13 @@ def from_graph(state, control, current_url):
         graphs = track.local_artist.lastfm_artist.graph_out
         weighted_artists = list(control.weight_options(state, graphs))
         total_weight = sum(map(lambda x: x[0], weighted_artists))
-        index = total_weight * random()
+        weighted_artists = [(weight / total_weight, artist) for (weight, artist) in weighted_artists]
+        weighted_artists.sort(reverse=False)
+        for (weight, artist) in weighted_artists:
+            LOG.debug('{0:f3.2} {1}'.format(weight, artist[0:60]))
+        index = random()
         while weighted_artists:
             (weight, artist) = weighted_artists.pop()
-            LOG.debug('{0} at {1}: {2}'.format(index, weight, artist.name))
             index -= weight
             if index <= 0:
                 return control.select_track(state, artist)
