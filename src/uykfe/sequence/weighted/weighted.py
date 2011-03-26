@@ -18,8 +18,13 @@ class WeightedControl(Control):
         self.__depth = depth
         self.__x_depth = x_depth
         self.__max_weight = state.session.query(max_(Graph.weight)).one()
+        
+    def __normalize(self, weight, exponent):
+        weight = 1 + weight / self.__max_weight
+        return weight ** exponent
     
     def weight_options(self, state, graphs):
+        
         def count_unplayed(graph):
             unplayed = 0
             for artist in graph.to_.local_artists:
@@ -29,26 +34,28 @@ class WeightedControl(Control):
             return unplayed
         unplayed = dict((graph, count_unplayed(graph)) for graph in graphs)
         max_unplayed = max(unplayed.values())
+        unplayed = dict((graph, unplayed[graph] / max_unplayed) for graph in graphs)
+        
         if len(state.history) > self.__depth:
             previous = state.history[-self.__depth].local_artist.lastfm_artist
         else:
             previous = None
+            
         for graph in graphs:
-            next_weight = graph.weight * unplayed[graph]
-            next_weight /= self.__max_weight * max_unplayed
-            next_weight **= self.__x_next
-            depth_weight = 1
+            weight = self.__normalize(graph.weight * unplayed[graph], self.__x_next)
+            depth_weight = 0
             if previous:
-                try:
-                    q = state.session.query(Graph.weight)
-                    q = q.filter(Graph.from_ == previous)
-                    q = q.filter(Graph.to_ == graph.to_)  
-                    depth_weight += q.one()
-                except NoResultFound:
-                    LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
-                depth_weight /= self.__max_weight + 1
-                depth_weight **= self.__x_depth
-            weight = next_weight * depth_weight
+                if previous == graph.to_:
+                    depth_weight = self.__max_weight
+                else:
+                    try:
+                        q = state.session.query(Graph.weight)
+                        q = q.filter(Graph.from_ == previous)
+                        q = q.filter(Graph.to_ == graph.to_)  
+                        depth_weight = q.one()[0]
+                    except NoResultFound:
+                        LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
+            weight = weight * self.__normalize(depth_weight, self.__x_depth)
             yield (weight, graph.to_)
     
     def select_track(self, state, lastfm_artist):
