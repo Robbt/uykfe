@@ -54,7 +54,7 @@ def find_track(session, artist, title):
 
 
 if __name__ == '__main__':
-    basicConfig(level=INFO)
+    basicConfig(level=DEBUG)
     parser = build_parser()
     args = parser.parse_args()
     session = open_db()()
