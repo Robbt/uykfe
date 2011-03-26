@@ -51,6 +51,9 @@ def from_graph(state, control, current_url):
     try:
         track = state.session.query(LocalTrack).filter(LocalTrack.url == current_url).one()
         graphs = track.local_artist.lastfm_artist.graph_out
+        if not graphs:
+            LOG.warn('No routes from {0}.'.format(track.local_artist.name))
+            return control.random_track(state)
         weighted_artists = list(control.weight_options(state, graphs))
         total_weight = sum(map(lambda x: x[0], weighted_artists))
         weighted_artists = [(weight / total_weight, artist) for (weight, artist) in weighted_artists]
