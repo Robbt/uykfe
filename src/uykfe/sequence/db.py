@@ -20,7 +20,7 @@ class DbState(State):
         return self.__session
     
     def record_track(self, track):
-        self.history.append[track]
+        self.history.append(track)
         
 
 class DbControl(Control):
