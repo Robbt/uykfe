@@ -1,0 +1,6 @@
+env
+.bashrc
+.metadata
+.project
+.pydevproject
+__pycache__
