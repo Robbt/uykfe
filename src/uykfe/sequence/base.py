@@ -56,7 +56,7 @@ def from_graph(state, control, current_url):
         weighted_artists = [(weight / total_weight, artist) for (weight, artist) in weighted_artists]
         weighted_artists.sort(reverse=False)
         for (weight, artist) in weighted_artists:
-            LOG.debug('{0:f3.2} {1}'.format(weight, artist[0:60]))
+            LOG.debug('{0:f3.2} {1}'.format(weight, artist.name[0:60]))
         index = random()
         while weighted_artists:
             (weight, artist) = weighted_artists.pop()
