@@ -18,6 +18,9 @@ class State():
     @abstractproperty
     def session(self): pass
     
+    @abstractmethod
+    def record_track(self, track): pass
+    
 
 class Control():
     
@@ -37,9 +40,11 @@ def sequence(state, control):
         current_url = state.current_url
         if not current_url:
             LOG.info('No current file.')
-            yield control.random_track(state)
+            track = control.random_track(state)
         else:
-            yield from_graph(state, control, current_url)
+            track = from_graph(state, control, current_url)
+        state.record_track(track)
+        yield track
         
         
 def from_graph(state, control, current_url):
