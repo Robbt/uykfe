@@ -4,7 +4,6 @@ from random import shuffle
 from uykfe.sequence.base import Control
 
 
-
 class SimpleControl(Control):
     
     def weight_options(self, state, graphs):
