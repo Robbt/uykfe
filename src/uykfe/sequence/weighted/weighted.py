@@ -42,7 +42,7 @@ class WeightedControl(Control):
             previous = None
             
         for graph in graphs:
-            weight = self.__normalize(graph.weight * unplayed[graph], self.__x_next)
+            weight = self.__normalize(graph.weight, self.__x_next) * unplayed[graph]
             depth_weight = 0
             if previous:
                 if previous == graph.to_:
