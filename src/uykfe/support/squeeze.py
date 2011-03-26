@@ -12,9 +12,9 @@ LOG = getLogger(__name__)
 class SqueezeServer():
     
     def __init__(self, address=None, port=None, player=None, dir=None, name=None):
-        address = address or squeeze_kargs(dir, name)[ADDRESS]
-        port = port or squeeze_kargs(dir, name)[PORT]
-        player = player or squeeze_kargs(dir, name)[PLAYER]
+        address = address or squeeze_kargs(dir=dir, name=name)[ADDRESS]
+        port = port or squeeze_kargs(dir=dir, name=name)[PORT]
+        player = player or squeeze_kargs(dir=dir, name=name)[PLAYER]
         LOG.debug('Connecting to {0}:{1}.'.format(address, port))
         self.__telnet = Telnet(address, port) 
         LOG.debug('Connected.')
