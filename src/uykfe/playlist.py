@@ -6,7 +6,8 @@ from random import choice
 
 from uykfe.support.db import open_db, LocalArtist, LocalTrack
 from uykfe.sequence.base import sequence
-from uykfe.sequence.static import StaticState, StaticControl
+from uykfe.sequence.static import StaticState
+from uykfe.sequence.simple.simple import SimpleControl
 
 
 LOG = getLogger(__name__)
@@ -37,6 +38,7 @@ def find_track(session, artist, title):
     else:
         raise Exception('No match found for {0} by {1}.'.format(title, artist))
 
+
 if __name__ == '__main__':
     basicConfig(level=INFO)
     parser = build_parser()
@@ -44,8 +46,8 @@ if __name__ == '__main__':
     session = open_db()()
     track = find_track(session, args.artist, args.track)
     state = StaticState(session)
-    state.current_url = track.url if track else None
-    control = StaticControl()
+    if track:
+        state.record_track(track)
+    control = SimpleControl()
     for track in islice(sequence(state, control), args.count):
         print(track.url)
-        
