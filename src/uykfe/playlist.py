@@ -3,7 +3,7 @@ from itertools import islice
 from logging import getLogger, basicConfig, DEBUG, INFO
 from argparse import ArgumentParser
 
-from uykfe.support.db import open_db, LastFmArtist, LocalArtist, LocalTrack
+from uykfe.support.db import open_db, LocalArtist, LocalTrack
 from uykfe.sequence.base import sequence
 from uykfe.sequence.static import StaticState, StaticControl
 
@@ -23,13 +23,16 @@ def build_parser():
 def find_track(session, artist, title):
     if not (artist or title):
         return None
-    q = session.query(LastFmArtist).join(LocalArtist)
-    if artist:
-        q = q.filter(LocalArtist.name.contains(artist))
+    q = session.query(LocalTrack)
     if title:
-        q = q.join(LocalTrack).filter(LocalTrack.name.contains(title))
-    return q.one()
-
+        q = q.filter(LocalTrack.name.contains(title))
+    if artist:
+        q = q.join(LocalArtist).filter(LocalArtist.name.contains(artist))
+    tracks = q.all()
+    if tracks:
+        return tracks.pop()
+    else:
+        raise Exception('No match found for {0} and {1}.'.format(artist, title))
 
 if __name__ == '__main__':
     #basicConfig(level=INFO)
