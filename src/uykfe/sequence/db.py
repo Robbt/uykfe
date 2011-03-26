@@ -1,7 +1,7 @@
 
-from random import shuffle
+from random import shuffle, choice
 
-from uykfe.sequence.base import State
+from uykfe.sequence.base import State, Control
 from uykfe.support.db import LocalTrack
 
 
@@ -22,3 +22,16 @@ class DbState(State):
     def record_track(self, track):
         self.history.append(track)
         
+        
+class DbControl(Control):
+        
+    def select_track(self, state, lastfm_artist):
+        track = choice([track 
+                        for local_artist in lastfm_artist.local_artists
+                        for track in local_artist.tracks
+                        if track in state.unplayed_tracks])
+        state.unplayed_tracks.remove(track)
+        return track
+    
+    def random_track(self, state):
+        return state.unplayed_tracks.pop()

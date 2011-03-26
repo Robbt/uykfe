@@ -1,17 +1,17 @@
 
 from logging import getLogger
-from random import shuffle
-from sqlalchemy.sql.functions import max as max_
 
-from uykfe.sequence.base import Control
-from uykfe.support.db import Graph
+from sqlalchemy.sql.functions import max as max_
 from sqlalchemy.orm.exc import NoResultFound
+
+from uykfe.support.db import Graph
+from uykfe.sequence.db import DbControl
 
 
 LOG = getLogger(__name__)
 
 
-class WeightedControl(Control):
+class WeightedControl(DbControl):
     
     def __init__(self, state, x_next, depth, x_depth):
         self.__x_next = x_next
@@ -57,18 +57,6 @@ class WeightedControl(Control):
                     except NoResultFound:
                         LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
                         depth_weight = 0
-            weight = weight * self.__normalize(depth_weight, self.__x_depth)
+            weight *= self.__normalize(depth_weight, self.__x_depth)
             yield (weight, graph.to_)
     
-    def select_track(self, state, lastfm_artist):
-        tracks = [track 
-                  for local_artist in lastfm_artist.local_artists
-                  for track in local_artist.tracks
-                  if track in state.unplayed_tracks]
-        shuffle(tracks)
-        track = tracks[0]
-        state.unplayed_tracks.remove(track)
-        return track
-    
-    def random_track(self, state):
-        return state.unplayed_tracks.pop()
