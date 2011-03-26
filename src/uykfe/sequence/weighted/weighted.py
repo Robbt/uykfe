@@ -36,7 +36,7 @@ class WeightedControl(Control):
         max_unplayed = max(unplayed.values())
         unplayed = dict((graph, unplayed[graph] / max_unplayed) for graph in graphs)
         
-        if len(state.history) > self.__depth:
+        if self.__depth and len(state.history) > self.__depth:
             previous = state.history[-self.__depth].local_artist.lastfm_artist
         else:
             previous = None
