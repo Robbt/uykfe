@@ -21,7 +21,7 @@ class WeightedControl(Control):
         
     def __normalize(self, weight, exponent):
         normalized = (1 + weight / self.__max_weight) ** exponent
-        LOG.debug('{0:6.1f} -> {1:4.2f}'.format(weight, normalized))
+        LOG.debug('{0:7.1f} -> {1:4.2f}'.format(weight, normalized))
         return normalized
     
     def weight_options(self, state, graphs):
