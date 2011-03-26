@@ -54,7 +54,7 @@ def from_graph(state, control, current_url):
         weighted_artists = list(control.weight_options(state, graphs))
         total_weight = sum(map(lambda x: x[0], weighted_artists))
         weighted_artists = [(weight / total_weight, artist) for (weight, artist) in weighted_artists]
-        weighted_artists.sort(reverse=False)
+        weighted_artists.sort(reverse=True)
         for (weight, artist) in weighted_artists:
             LOG.debug('{0:3.2f} {1}'.format(weight, artist.name[0:60]))
         index = random()
