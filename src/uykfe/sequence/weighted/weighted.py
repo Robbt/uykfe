@@ -11,6 +11,10 @@ from uykfe.sequence.db import DbControl
 LOG = getLogger(__name__)
 
 
+def normalize(weight, exponent, max_weight):
+    return (1 + weight / max_weight) ** exponent / 2 ** exponent
+
+
 class WeightedControl(DbControl):
     
     def __init__(self, state, x_next, depth, x_depth):
@@ -19,11 +23,6 @@ class WeightedControl(DbControl):
         self.__x_depth = x_depth
         self.__max_weight = state.session.query(max_(Graph.weight)).one()[0]
         
-    def __normalize(self, weight, exponent):
-        normalized = (1 + weight / self.__max_weight) ** exponent
-        #LOG.debug('{0:7.1f} -> {1:4.2f}'.format(weight, normalized))
-        return normalized
-    
     def weight_options(self, state, graphs):
         
         def count_unplayed(graph):
@@ -43,7 +42,7 @@ class WeightedControl(DbControl):
             previous = None
             
         for graph in graphs:
-            weight = self.__normalize(graph.weight, self.__x_next) * unplayed[graph]
+            weight = normalize(graph.weight, self.__x_next, self.__max_weight) * unplayed[graph]
             depth_weight = 0
             if previous:
                 if previous == graph.to_:
@@ -57,6 +56,6 @@ class WeightedControl(DbControl):
                     except NoResultFound:
                         LOG.debug('No link from {0} to {1}.'.format(previous.name, graph.to_.name))
                         depth_weight = 0
-            weight *= self.__normalize(depth_weight, self.__x_depth)
+            weight *= normalize(depth_weight, self.__x_depth, self.__max_weight)
             yield (weight, graph.to_)
     
