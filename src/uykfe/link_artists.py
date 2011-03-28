@@ -64,7 +64,7 @@ select from_id, to_id
     if not ids: return False
     graph = session.query(Graph).filter(and_(Graph.from_id == ids['from_id'], 
                                              Graph.to_id == ids['to_id'])).one()
-    LOG.info('Trimming {0} from {1} via {2}/{3}.'.format(artist.name, n_in, graph.from_, graph.weight))
+    LOG.info('Trimming {0} from {1} via {2}/{3}.'.format(artist.name, n_in, graph.from_.name, graph.weight))
     assert graph in artist.graph_in, graph
     session.delete(graph)
     session.commit()
