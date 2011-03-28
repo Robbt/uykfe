@@ -54,7 +54,7 @@ select from_id, to_id
                graph as g2
          where a.id = g1.from_id
                and a.id = g2.from_id
-           and 1 = g1.to_id
+           and :id = g1.to_id
          group by a.id
          order by n_out desc, weight asc)
  where n_out > :lower
