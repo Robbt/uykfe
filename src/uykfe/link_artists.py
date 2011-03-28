@@ -62,7 +62,7 @@ select from_id, to_id
 '''), params={'id': artist.id, 'lower': lower}).first()
     if not ids: return False
     graph = session.query(Graph).filter(and_(Graph.from_id == ids['from_id'], 
-                                             Graph.to_id == ids['to_id'])).one()[0]
+                                             Graph.to_id == ids['to_id'])).one()
     session.delete(graph)
     session.commit()
     assert n_in == len(artist.graph_in) + 1  # check deletion is propagated
