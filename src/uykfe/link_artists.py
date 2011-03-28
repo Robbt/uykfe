@@ -1,11 +1,14 @@
 
-from logging import getLogger, basicConfig, INFO
 from argparse import ArgumentParser
+from collections import defaultdict
+from logging import getLogger, basicConfig, INFO
+from random import randint
 
 from sqlalchemy.sql.expression import text
 
 from uykfe.support.db import open_db, LastFmArtist
 from uykfe.args import positive_int
+from altgraph.Graph import Graph
 
 
 LOG = getLogger(__name__)
@@ -19,6 +22,52 @@ def link_artists(upper, lower, session):
     finally:
         session.close()
         
+        
+def trim_links(session, lower):
+    by_incoming = defaultdict(lambda: [])
+    for artist in session.query(LastFmArtist).all():
+        by_incoming[len(artist.graph_in)].append(artist)
+    while True:
+        keys = list(by_incoming.keys())
+        keys.sort(reverse=True)
+        upper = keys[0]
+        if upper <= lower: return
+        artists = by_incoming[upper]
+        artist = artists.pop(randint(0, len(artists)-1))
+        if trim_artist(session, artist, lower):
+            by_incoming[upper-1].append(artist)
+            
+            
+def trim_artist(session, artist, lower):
+    # we need to reduce the links coming in to this node, so we select the incoming
+    # artist who (1) has the most links out and (2) has the lowest scoring link
+    # (but without lowering to less than lower).
+    n_in = len(artist.graph_in)
+    LOG.info('Trimming {0} from {1}.'.format(artist.name, n_in))
+    ids = session.query(text('''
+select from_id, to_id
+  from (select g1.from_id as from_id,
+               g1.to_id as to_id,
+               count(g2.from_id) as n_out, 
+               g1.weight as weight
+          from lastfm_artists as a,
+               graph as g1,
+               graph as g2
+         where a.id = g1.from_id
+           and a.id = g2.from_id
+           and 1 = g1.to_id
+         group by a.id
+         order by n_out desc, weight asc)
+ where n_out > :lower
+ limit 1
+'''), id=artist.id, lower=lower).first()
+    if not ids: return False
+    graph = session.query(Graph).get(from_id=ids['from_id'], to_id=ids['to_id']).one()[0]
+    session.delete(graph)
+    session.commit()
+    assert n_in == len(artist.graph_in) + 1  # check deletion is propagated
+    return True
+
 
 #def link_artist(session, artist):
 #    session.execute(text('''
