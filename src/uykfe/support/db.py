@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.exc import OperationalError
 
 from uykfe.support.config import CONFIG_ENVDIR
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 
 DB_NAME = 'uykfe.db'
@@ -114,8 +114,8 @@ class LastFmArtist(BASE):
     linked = Column(Boolean, default=False)
     local_artists = relationship('LocalArtist', backref='lastfm_artist')
     lastfm_tagweights = relationship('LastFmTagWeight', backref='lastfm_artist')
-    graph_out = relationship('Graph', backref='from_', primaryjoin='lastfm_artists.c.id == graph.c.from_id')
-    graph_in = relationship('Graph', backref='to_', primaryjoin='lastfm_artists.c.id == graph.c.to_id')
+    graph_out = relationship('Graph', backref='from_', order_by='desc(Graph.weight)', primaryjoin='lastfm_artists.c.id == graph.c.from_id')
+    graph_in = relationship('Graph', backref='to_', order_by='desc(Graph.weight)', primaryjoin='lastfm_artists.c.id == graph.c.to_id')
     
     def __init__(self, name):
         self.name = name
@@ -145,6 +145,4 @@ class LastFmTagWeight(BASE):
         self.weight = weight
         self.lastfm_tagword = lastfm_tagword
         self.lastfm_artist = lastfm_artist
-        
-    
-        
+

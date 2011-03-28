@@ -6,8 +6,8 @@ from uykfe.sequence.db import DbState
 
 class SqueezeState(DbState):
     
-    def __init__(self, session, squeeze):
-        super(SqueezeState, self).__init__(session)
+    def __init__(self, session, limit, squeeze):
+        super(SqueezeState, self).__init__(session, limit)
         self.__squeeze = squeeze
         
     @property

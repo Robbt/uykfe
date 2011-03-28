@@ -1,29 +1,40 @@
 
+from logging import getLogger
 from random import shuffle, choice
 
 from uykfe.sequence.base import State, Control
 from uykfe.support.db import LocalTrack
 
 
+LOG = getLogger(__name__)
+
 
 class DbState(State):
     
-    def __init__(self, session):
+    def __init__(self, session, limit):
         self.__session = session
         all_tracks = list(session.query(LocalTrack).all())
         shuffle(all_tracks)
         self.unplayed_tracks = set(all_tracks)
         self.history = []
+        self.__limit = limit
         
     @property
     def session(self):
         return self.__session
+    
+    @property
+    def limit(self):
+        return self.__limit
     
     def record_track(self, track):
         self.history.append(track)
         
         
 class DbControl(Control):
+    
+    def __init__(self, directed):
+        self.__directed = directed
         
     def select_track(self, state, lastfm_artist):
         track = choice([track 
@@ -35,3 +46,24 @@ class DbControl(Control):
     
     def random_track(self, state):
         return state.unplayed_tracks.pop()
+    
+    def weighted_artists(self, state, track):
+        artists = set()
+        for graph in track.local_artist.lastfm_artist.graph_out[0:state.limit]:
+            artists.add(graph.to_)
+            LOG.debug('Directed: {0}/{1}.'.format(graph.to_.name, graph.weight))
+            yield (graph.weight, graph.to_)
+        if not self.__directed:
+            for graph in track.local_artist.lastfm_artist.graph_in[0:state.limit]:
+                LOG.debug('Undirected: {0}/{1}.'.format(graph.from_.name, graph.weight))
+                if graph.from_ not in artists:
+                    artists.add(graph.from_)
+                    yield (graph.weight, graph.from_)
+
+    def _unplayed(self, state, artist):
+        unplayed = 0
+        for local_artist in artist.local_artists:
+            for track in local_artist.tracks:
+                if track in state.unplayed_tracks:
+                    unplayed += 1
+        return unplayed
