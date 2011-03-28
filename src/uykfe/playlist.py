@@ -21,6 +21,6 @@ if __name__ == '__main__':
     state = StaticState(session, args.limit)
     if track:
         state.record_track(track)
-    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional)
+    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional, args.neighbour)
     for track in islice(sequence(state, control), args.count):
         print(track.url)

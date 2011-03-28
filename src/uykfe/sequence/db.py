@@ -1,6 +1,6 @@
 
 from logging import getLogger
-from random import shuffle, choice
+from random import choice
 
 from uykfe.sequence.base import State, Control
 from uykfe.support.db import LocalTrack
@@ -14,7 +14,6 @@ class DbState(State):
     def __init__(self, session, limit):
         self.__session = session
         all_tracks = list(session.query(LocalTrack).all())
-        shuffle(all_tracks)
         self.unplayed_tracks = set(all_tracks)
         self.history = []
         self.__limit = limit
@@ -34,7 +33,7 @@ class DbState(State):
 class DbControl(Control):
     
     def __init__(self, directed):
-        self.__directed = directed
+        self._directed = directed
         
     def select_track(self, state, lastfm_artist):
         track = choice([track 
@@ -45,7 +44,9 @@ class DbControl(Control):
         return track
     
     def random_track(self, state):
-        return state.unplayed_tracks.pop()
+        track = choice(list(state.unplayed_tracks))
+        state.unplayed_tracks.remove(track)
+        return track
     
     def weighted_artists(self, state, track):
         artists = set()
@@ -53,7 +54,7 @@ class DbControl(Control):
             artists.add(graph.to_)
             LOG.debug('Directed: {0}/{1}.'.format(graph.to_.name, graph.weight))
             yield (graph.weight, graph.to_)
-        if not self.__directed:
+        if not self._directed:
             for graph in track.local_artist.lastfm_artist.graph_in[0:state.limit]:
                 LOG.debug('Undirected: {0}/{1}.'.format(graph.from_.name, graph.weight))
                 if graph.from_ not in artists:

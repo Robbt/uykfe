@@ -18,11 +18,12 @@ def normalize(weight, exponent, max_weight):
 
 class WeightedControl(DbControl):
     
-    def __init__(self, state, x_next, depth, x_depth, directed):
+    def __init__(self, state, x_next, depth, x_depth, directed, neighbour):
         super(WeightedControl, self).__init__(directed)
         self.__x_next = x_next
         self.__depth = depth
         self.__x_depth = x_depth
+        self.__neighbour = neighbour
         self.__max_weight = state.session.query(max_(Graph.weight)).one()[0]
         
     def weighted_artists(self, state, track):
@@ -33,12 +34,19 @@ class WeightedControl(DbControl):
             previous = None
 
         weighted_artists = list(super(WeightedControl, self).weighted_artists(state, track))
+        if not weighted_artists:
+            return
         unplayed = dict((artist, self._unplayed(state, artist)) for (_, artist) in weighted_artists)
         max_unplayed = max(unplayed.values())
         unplayed = dict((artist, unplayed[artist] / max_unplayed) for (_, artist) in weighted_artists)
         
         for (weight, artist) in weighted_artists:
             weight = normalize(weight, self.__x_next, self.__max_weight) * unplayed[artist]
+            if self.__neighbour:
+                outgoing = len(artist.graph_out)
+                if not self._directed:
+                    outgoing += len(artist.graph_in)
+                weight /= outgoing
             depth_weight = 0
             if previous:
                 if previous == artist:
