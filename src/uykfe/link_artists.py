@@ -54,13 +54,13 @@ select from_id, to_id
                graph as g1,
                graph as g2
          where a.id = g1.from_id
-           and a.id = g2.from_id
+               and a.id = g2.from_id
            and 1 = g1.to_id
          group by a.id
          order by n_out desc, weight asc)
  where n_out > :lower
  limit 1
-'''), id=artist.id, lower=lower).first()
+'''), params={'id': artist.id, 'lower': lower}).first()
     if not ids: return False
     graph = session.query(Graph).get(from_id=ids['from_id'], to_id=ids['to_id']).one()[0]
     session.delete(graph)
