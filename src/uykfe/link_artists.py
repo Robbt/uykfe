@@ -44,7 +44,7 @@ def trim_artist(session, artist, lower):
     # (but without lowering to less than lower).
     n_in = len(artist.graph_in)
     LOG.info('Trimming {0} from {1}.'.format(artist.name, n_in))
-    ids = session.query(text('''
+    ids = session.execute(text('''
 select from_id, to_id
   from (select g1.from_id as from_id,
                g1.to_id as to_id,
