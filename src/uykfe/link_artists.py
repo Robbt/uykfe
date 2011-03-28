@@ -35,6 +35,8 @@ def trim_links(session, lower):
         artist = artists.pop(randint(0, len(artists)-1))
         if trim_artist(session, artist, lower):
             by_incoming[upper-1].append(artist)
+        if not artists:
+            del by_incoming[upper]
             
             
 def trim_artist(session, artist, lower):
