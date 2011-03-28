@@ -24,6 +24,7 @@ def build_weighted_parser(description):
     parser = ArgumentParser(description=description)
     parser.add_argument('-x', '--localexp', default=1, type=float, help='exponent for local weight')
     parser.add_argument('-v', '--debug', default=False, action='store_true', help='debug logging')
+    parser.add_argument('-l', '--limit', default=None, type=positive_int, help='limit to top LIMIT edges')
     return parser
 
 
@@ -33,6 +34,7 @@ def add_inital_artist(parser):
     
     
 def add_depth(parser):
+    parser.add_argument('-o', '--unidirectional', default=False, action='store_true', help='directed graph')
     parser.add_argument('-d', '--depth', default=0, type=positive_int, help='depth for delayed weighting')
     parser.add_argument('-y', '--depthexp', default=1, type=float, help='exponent for depth weight')
     

@@ -1,6 +1,5 @@
 
 from itertools import islice
-from logging import basicConfig, DEBUG, INFO
 
 from uykfe.support.db import open_db
 from uykfe.sequence.base import sequence
@@ -19,9 +18,9 @@ if __name__ == '__main__':
     set_logging(args.debug)
     session = open_db()()
     track = find_track(session, args.artist, args.track)
-    state = StaticState(session)
+    state = StaticState(session, args.limit)
     if track:
         state.record_track(track)
-    control = WeightedControl(state, args.localexp, args.depth, args.depthexp)
+    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional)
     for track in islice(sequence(state, control), args.count):
         print(track.url)
