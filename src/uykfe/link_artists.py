@@ -44,7 +44,6 @@ def trim_artist(session, artist, lower):
     # artist who (1) has the most links out and (2) has the lowest scoring link
     # (but without lowering to less than lower).
     n_in = len(artist.graph_in)
-    LOG.info('Trimming {0} from {1}.'.format(artist.name, n_in))
     ids = session.execute(text('''
 select from_id, to_id
   from (select g1.from_id as from_id,
@@ -65,6 +64,7 @@ select from_id, to_id
     if not ids: return False
     graph = session.query(Graph).filter(and_(Graph.from_id == ids['from_id'], 
                                              Graph.to_id == ids['to_id'])).one()
+    LOG.info('Trimming {0} from {1} via {2}/{3}.'.format(artist.name, n_in, graph.from_, graph.weight))
     assert graph in artist.graph_in, graph
     session.delete(graph)
     session.commit()
