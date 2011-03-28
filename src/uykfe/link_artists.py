@@ -11,11 +11,11 @@ from uykfe.args import positive_int
 LOG = getLogger(__name__)
 
 
-def link_artists(limit, dir=None, name=None):
-    session = open_db(dir=dir, name=name)()
+def link_artists(upper, lower, session):
     try:
         for artist in session.query(LastFmArtist).filter(LastFmArtist.linked == False).all():
-            link_artist(session, artist, limit)
+            link_artist(session, artist, upper)
+        trim_links(session, lower)
     finally:
         session.close()
         
@@ -117,7 +117,9 @@ select :id as from_id,
 if __name__ == '__main__':
     basicConfig(level=INFO)
     parser = ArgumentParser('Link related artists in the database')
-    parser.add_argument('-l', '--limit', default=10, type=positive_int, help='limit to top LIMIT edges')
+    parser.add_argument('-u', '--upper', default=6, type=positive_int, help='initial number of edges')
+    parser.add_argument('-l', '--lower', default=3, type=positive_int, help='final number of edges')
     args = parser.parse_args()
-    link_artists(args.limit)
+    link_artists(args.upper, args.lower, open_db()())
+
     
