@@ -15,7 +15,7 @@ if __name__ == '__main__':
     set_logging(args.debug)
     squeeze = SqueezeServer(name=args.config)
     state = SqueezeState(open_db()(), args.limit, squeeze)
-    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional)
+    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional, args.neighbour)
     state.wait()
     for track in sequence(state, control):
         squeeze.playlist_add(track.url)
