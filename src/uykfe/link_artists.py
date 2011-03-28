@@ -63,9 +63,10 @@ select from_id, to_id
     if not ids: return False
     graph = session.query(Graph).filter(and_(Graph.from_id == ids['from_id'], 
                                              Graph.to_id == ids['to_id'])).one()
+    assert graph in artist.graph_in, graph
     session.delete(graph)
     session.commit()
-    assert n_in == len(artist.graph_in) + 1  # check deletion is propagated
+    assert n_in == len(artist.graph_in) + 1, (n_in, len(artist.graph_in))  # check deletion is propagated
     return True
 
 
