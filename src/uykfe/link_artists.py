@@ -6,9 +6,8 @@ from random import randint
 
 from sqlalchemy.sql.expression import text
 
-from uykfe.support.db import open_db, LastFmArtist
+from uykfe.support.db import open_db, LastFmArtist, Graph
 from uykfe.args import positive_int
-from altgraph.Graph import Graph
 
 
 LOG = getLogger(__name__)
