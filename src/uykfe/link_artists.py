@@ -61,7 +61,8 @@ select from_id, to_id
  limit 1
 '''), params={'id': artist.id, 'lower': lower}).first()
     if not ids: return False
-    graph = session.query(Graph).filter(from_id=ids['from_id'], to_id=ids['to_id']).one()[0]
+    graph = session.query(Graph).filter(Graph.from_id == ids['from_id'], 
+                                        Graph.to_id == ids['to_id']).one()[0]
     session.delete(graph)
     session.commit()
     assert n_in == len(artist.graph_in) + 1  # check deletion is propagated
