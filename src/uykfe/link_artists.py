@@ -35,8 +35,11 @@ def trim_links(session, lower):
         artist = artists.pop(randint(0, len(artists)-1))
         if trim_artist(session, artist, lower):
             by_incoming[upper-1].append(artist)
+        else:
+            LOG.info('No candidates for {0} at {1}.'.format(artist.name, upper))
         if not artists:
             del by_incoming[upper]
+            LOG.info('Trimmed {0}.'.format(upper))
             
             
 def trim_artist(session, artist, lower):
@@ -64,7 +67,8 @@ select from_id, to_id
     if not ids: return False
     graph = session.query(Graph).filter(and_(Graph.from_id == ids['from_id'], 
                                              Graph.to_id == ids['to_id'])).one()
-    LOG.info('Trimming {0} from {1} via {2}/{3}.'.format(artist.name, n_in, graph.from_.name, graph.weight))
+    LOG.debug('Trimming {0} from {1} via {2}/{3}.'.format(
+                    artist.name, n_in, graph.from_.name, graph.weight))
     assert graph in artist.graph_in, graph
     session.delete(graph)
     session.commit()
