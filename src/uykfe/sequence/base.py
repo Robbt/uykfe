@@ -63,8 +63,8 @@ def from_graph(state, control, current_url):
         for (weight, artist) in weighted_artists:
             LOG.debug('{0:5.4f} {1}'.format(weight, artist.name[0:60]))
         index = random()
-        while weighted_artists:
-            (weight, artist) = weighted_artists.pop()
+        LOG.debug('{0:5.4f}'.format(index))
+        for (weight, artist) in weighted_artists:
             index -= weight
             if index <= 0:
                 return control.select_track(state, artist)
