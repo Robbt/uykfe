@@ -1,0 +1,24 @@
+
+from logging import basicConfig, DEBUG
+from unittest import TestCase
+
+from uykfe.scan_mp3s import scan_dirs
+from uykfe.support.db import delete_db, open_db
+from uykfe._test import TEST_DIR
+from uykfe.identify_artists import identify_artists
+from uykfe.tag_artists import tag_artists
+from uykfe.link_artists import link_artists
+
+
+class TagArtistsTest(TestCase):
+    
+    def test_tag_artists(self):
+        basicConfig(level=DEBUG)
+        delete_db(dir=TEST_DIR)
+        session = open_db(dir=TEST_DIR)()
+        scan_dirs(session, ['/home/andrew/projects/personal/uykfe/data'])
+        session.commit()
+        identify_artists(dir=TEST_DIR)
+        tag_artists(dir=TEST_DIR)
+        link_artists(dir=TEST_DIR)
+        
