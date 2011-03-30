@@ -36,16 +36,26 @@ class DbControl(Control):
         self._directed = directed
         
     def select_track(self, state, lastfm_artist):
-        track = choice([track 
-                        for local_artist in lastfm_artist.local_artists
-                        for track in local_artist.tracks
-                        if track in state.unplayed_tracks])
+        LOG.debug('Selecting for {0}.'.format(lastfm_artist.name))
+        def tracks():
+            for local_artist in lastfm_artist.local_artists:
+                LOG.debug(' {0}:'.format(local_artist.name))
+                for track in local_artist.tracks:
+                    if track in state.unplayed_tracks:
+                        LOG.debug('  {0}/{1}.'.format(track.name, track.url))
+                        yield track
+        track=choice(list(tracks()))
+#        track = choice([track 
+#                        for local_artist in lastfm_artist.local_artists
+#                        for track in local_artist.tracks
+#                        if track in state.unplayed_tracks])
         state.unplayed_tracks.remove(track)
         return track
     
     def random_track(self, state):
         track = choice(list(state.unplayed_tracks))
         state.unplayed_tracks.remove(track)
+        state.history = []  # reset
         return track
     
     def weighted_artists(self, state, track):

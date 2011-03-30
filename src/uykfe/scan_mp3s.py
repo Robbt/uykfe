@@ -73,5 +73,5 @@ def scan_path(session, not_found, path):
 
 
 if __name__ == '__main__':
-    basicConfig(level=INFO)
+    basicConfig(level=DEBUG)
     scan_config()
