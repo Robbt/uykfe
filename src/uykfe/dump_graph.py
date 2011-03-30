@@ -49,24 +49,28 @@ def restrict(nodes_in, edges_map, artist):
     return (nodes, edges)
 
 
-def filter(nodes_in, edges_in, exponent, min_, limit, session, zero):
+def filter(nodes_in, edges_in, exponent, edges, tracks, limit, session, zero):
     LOG.info('Weighting with exponent {0:3.1f}.'.format(exponent))
     if limit:
         LOG.info('Restricting to top {0} edges.'.format(limit))
-    if min_:
-        LOG.info('Nodes must have at least {0} outgoing edges.'.format(min_))
+    if edges:
+        LOG.info('Nodes must have at least {0} outgoing edges.'.format(edges))
     nodes, weighted_edges = set(), set()
     max_weight = max(edge.weight for edge in edges_in)
     for node in nodes_in:
-        weighted = [(normalize(edge.weight, exponent, max_weight), edge) 
-                    for edge in session.query(Graph).filter(and_(Graph.from_id == node.id, Graph.weight > zero))]
-        if limit and limit < len(weighted):
-            weighted.sort(key=lambda we: we[0], reverse=True)
-            weighted = weighted[0:limit]
-        weighted_edges.update(weighted)
-        nodes.add(node)
-    if min_:
-        LOG.info('Discarding nodes with fewer than {0} outward links.'.format(min_))
+        n_tracks = sum(len(local_artist.tracks) for local_artist in node.local_artists)
+        if n_tracks >= tracks:
+            weighted = [(normalize(edge.weight, exponent, max_weight), edge) 
+                        for edge in session.query(Graph).filter(and_(Graph.from_id == node.id, Graph.weight > zero))]
+            if limit and limit < len(weighted):
+                weighted.sort(key=lambda we: we[0], reverse=True)
+                weighted = weighted[0:limit]
+            weighted_edges.update(weighted)
+            nodes.add(node)
+        else:
+            LOG.info('{0} has too few tracks {1}/{2}'.format(node.name, n_tracks, tracks))
+    if edges:
+        LOG.info('Discarding nodes with fewer than {0} outward links.'.format(edges))
         # repeat filtering to drop edges without nodes
         changed = True
         while changed:
@@ -77,7 +81,7 @@ def filter(nodes_in, edges_in, exponent, min_, limit, session, zero):
             count = defaultdict(lambda: 0)
             for (_, edge) in weighted_edges:
                 count[edge.from_] += 1
-            nodes = set(node for node in count.keys() if count[node] >= min_)
+            nodes = set(node for node in count.keys() if count[node] >= edges)
             changed = len_edges != len(weighted_edges) or len_nodes != len(nodes)
     LOG.info('Filtered {0} nodes and {1} edges.'.format(len(nodes), len(weighted_edges)))
     return (nodes, weighted_edges)
@@ -150,10 +154,11 @@ def level(value):
 if __name__ == '__main__':
     parser = build_weighted_parser('Dump graph to file')
     add_inital_artist(parser)
-    parser.add_argument('-n', '--min', default=0, type=positive_int, help='minimum number of edges')
-    parser.add_argument('-w', '--white', default=255, type=level, help='white level')
-    parser.add_argument('-b', '--black', default=0, type=level, help='black level')
-    parser.add_argument('-f', '--flatten', default=False, action='store_true', help='flatten edge colours?')
+    parser.add_argument('-n', '--edges', default=2, type=positive_int, help='minimum number of edges')
+    parser.add_argument('-m', '--tracks', default=5, type=positive_int, help='minimum number of tracks')
+    parser.add_argument('-w', '--white', default=192, type=level, help='white level')
+    parser.add_argument('-b', '--black', default=64, type=level, help='black level')
+    parser.add_argument('-f', '--flatten', default=True, action='store_false', help='NO flatten edge colours?')
     parser.add_argument('-g', '--weights', default=False, action='store_true', help='flatten weights?')
     parser.add_argument('-z', '--zero', default=0, type=float, help='fractional lower limit for weights')
     args = parser.parse_args()
@@ -166,7 +171,7 @@ if __name__ == '__main__':
     (nodes, edges, zero) = collect(session, args.zero)
     if artist:
         (nodes, edges) = restrict(nodes, dict((edge, edge) for edge in edges), artist)
-    (nodes, weighted_edges) = filter(nodes, edges, args.localexp, args.min, args.limit, session, zero)
+    (nodes, weighted_edges) = filter(nodes, edges, args.localexp, args.edges, args.tracks, args.limit, session, zero)
     if artist:
         (nodes, weighted_edges) = restrict(nodes, dict((edge, (weight, edge)) for (weight, edge) in weighted_edges), artist)
     dump(nodes, weighted_edges, args.white, args.black, args.flatten, args.weights)

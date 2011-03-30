@@ -3,10 +3,9 @@ from itertools import islice
 
 from uykfe.support.db import open_db
 from uykfe.sequence.base import sequence
-from uykfe.sequence.static import StaticState
-from uykfe.sequence.weighted.weighted import WeightedControl
 from uykfe.args import build_weighted_parser, find_track, add_depth,\
     add_inital_artist, set_logging
+from uykfe.sequence.distance.distance import DistanceControl, DistanceState
 
 
 if __name__ == '__main__':
@@ -18,9 +17,9 @@ if __name__ == '__main__':
     set_logging(args.debug)
     session = open_db()()
     track = find_track(session, args.artist, args.track)
-    state = StaticState(session, args.limit)
+    state = DistanceState(session, args.limit, args.unidirectional)
     if track:
         state.record_track(track)
-    control = WeightedControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional, args.neighbour)
+    control = DistanceControl(state, args.localexp, args.depth, args.depthexp, args.unidirectional, args.neighbour)
     for track in islice(sequence(state, control), args.count):
         print(track.url)

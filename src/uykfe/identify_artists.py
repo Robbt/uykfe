@@ -1,19 +1,21 @@
 
+from argparse import ArgumentParser
 from collections import defaultdict
 from difflib import get_close_matches
 from logging import getLogger, basicConfig, INFO, DEBUG
 from random import shuffle
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from uykfe.support.db import open_db, LocalArtist, LastFmArtist
 from uykfe.support.config import lastfm_kargs
 from uykfe.support.lastfm import LastFm, NotFoundError
-from sqlalchemy.orm.exc import NoResultFound
 
 
 LOG = getLogger(__name__)
 
 
-def identify_artists(dir=None, name=None):
+def identify_artists(ignore, dir=None, name=None):
     LOG.info('Opening database.')
     session = open_db(dir=dir, name=name)()
     try:
@@ -21,7 +23,10 @@ def identify_artists(dir=None, name=None):
         artists = session.query(LocalArtist).filter(LocalArtist.lastfm_artist == None).all()
         LOG.info('Read {0} artists.'.format(len(artists)))
         for artist in artists:
-            name = identify_artist(session, lastfm, artist)
+            if ignore:
+                name = artist.name
+            else:
+                name = identify_artist(session, lastfm, artist)
             LOG.info('Identified {0} as {1}.'.format(artist.name, name))
             try:
                 lastfm_artist = session.query(LastFmArtist).filter(LastFmArtist.name == name).one()
@@ -97,5 +102,8 @@ def make_similar(artist):
 
 if __name__ == '__main__':
     basicConfig(level=INFO)
-    identify_artists()
+    parser = ArgumentParser('Correlate artist names with Last.fm')
+    parser.add_argument('-i', '--ignore', default=False, action='store_true', help='ignore Last.fm')
+    args = parser.parse_args()
+    identify_artists(args.ignore)
     

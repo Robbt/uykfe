@@ -173,8 +173,8 @@ select :id as from_id,
 if __name__ == '__main__':
     basicConfig(level=INFO)
     parser = ArgumentParser('Link related artists in the database')
-    parser.add_argument('-u', '--upper', default=6, type=positive_int, help='initial number of edges')
-    parser.add_argument('-l', '--lower', default=3, type=positive_int, help='final number of edges')
+    parser.add_argument('-u', '--upper', default=10, type=positive_int, help='initial number of edges')
+    parser.add_argument('-l', '--lower', default=5, type=positive_int, help='final number of edges')
     args = parser.parse_args()
     link_artists(args.upper, args.lower, open_db()())
 
