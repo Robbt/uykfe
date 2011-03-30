@@ -65,11 +65,13 @@ def scan_path(session, not_found, path):
         track = LocalTrack(url=url, name=tag.title, local_artist=artist)
         session.add(track)
         session.commit()
-    except UnicodeEncodeError:
-        LOG.warn('Cannot encode ID3 for {0}.'.format(path))
+    except UnicodeEncodeError as e:
+        LOG.warn('Cannot encode ID3 for {0} ({1}).'.format(path, e))
         session.rollback()
-    except NoTagError:
-        LOG.warn('Cannot read ID3 for {0}.'.format(path))
+    except NoTagError as e:
+        LOG.warn('Cannot read ID3 for {0} ({1}).'.format(path, e))
+    except ValueError as e:
+        LOG.warn('Cannot read ID3 for {0} ({1}).'.format(path, e))
 
 
 if __name__ == '__main__':
