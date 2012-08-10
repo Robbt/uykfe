@@ -36,7 +36,7 @@ def add_inital_artist(parser):
 def add_depth(parser):
     parser.add_argument('-o', '--unidirectional', default=False, action='store_true', help='directed graph')
     parser.add_argument('-n', '--neighbour', default=True, action='store_false', help='disable neighbour weight')
-    parser.add_argument('-d', '--depth', default=None, type=positive_int, help='depth for delayed weighting (0: fixed)')
+    parser.add_argument('-d', '--depth', default=0, type=positive_int, help='depth for delayed weighting (0: fixed)')
     parser.add_argument('-y', '--depthexp', default=2, type=float, help='exponent for depth weight')
     
     
